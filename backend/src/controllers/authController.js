@@ -55,42 +55,7 @@ module.exports = { login, me, logout };
  * POST /api/auth/login
  * Autentica l'admin e restituisce un JWT.
  */
-async function login(req, res, next) {
-  try {
-    const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ success: false, message: 'Username e password obbligatori.' });
-    }
-
-    // Ricerca admin nel DB
-    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username.trim());
-
-    // Risposta generica per evitare user enumeration
-    if (!admin) {
-      return res.status(401).json({ success: false, message: 'Credenziali non valide.' });
-    }
-
-    const passwordValid = await bcrypt.compare(password, admin.password_hash);
-    if (!passwordValid) {
-      return res.status(401).json({ success: false, message: 'Credenziali non valide.' });
-    }
-
-    const token = jwt.sign(
-      { id: admin.id, username: admin.username },
-      env.jwtSecret,
-      { expiresIn: env.jwtExpiresIn }
-    );
-
-    return res.json({
-      success: true,
-      token,
-      admin: { id: admin.id, username: admin.username },
-    });
-  } catch (err) {
-    next(err);
-  }
-}
 
 /**
  * GET /api/auth/me
