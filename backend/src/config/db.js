@@ -5,15 +5,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   {
     realtime: {
-      enabled: false
+      params: {
+        eventsPerSecond: 0
+      }
     },
     auth: {
-      persistSession: false
+      persistSession: false,
+      autoRefreshToken: false
     },
     db: {
       schema: 'public'
     }
   }
 );
+
+// ❌ IMPORTANTE: disabilita socket runtime (hack necessario su Node 20)
+if (supabase.realtime) {
+  supabase.realtime.disconnect?.();
+}
 
 module.exports = supabase;
