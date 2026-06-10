@@ -7,12 +7,12 @@ const env = {
   isProduction: process.env.NODE_ENV === 'production',
 
   // JWT
-  jwtSecret: process.env.JWT_SECRET || 'dev-secret-CAMBIA-IN-PRODUZIONE-minimo-32-caratteri',
+  jwtSecret: process.env.JWT_SECRET || '123456789abcdefghilmnopqrstuvwxyz',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
 
   // Credenziali admin iniziali (seed al primo avvio)
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
-  adminPassword: process.env.ADMIN_PASSWORD || 'CambiamiSubito123!',
+  adminPassword: process.env.ADMIN_PASSWORD || 'Fiori2026!!',
 
   // Numero WhatsApp (formato internazionale senza +)
   whatsappNumber: process.env.WHATSAPP_NUMBER || '393451234567',
