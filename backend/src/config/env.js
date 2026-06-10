@@ -26,11 +26,22 @@ const env = {
 
   // CORS
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+
+  // Supabase
+  supabaseUrl:            process.env.SUPABASE_URL            || '',
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  supabaseStorageBucket:  process.env.SUPABASE_STORAGE_BUCKET  || 'products',
 };
 
 // Blocco critico: JWT secret non configurato in produzione
 if (env.isProduction && env.jwtSecret.includes('CAMBIA')) {
   console.error('ERRORE CRITICO: JWT_SECRET non è configurato correttamente per la produzione!');
+  process.exit(1);
+}
+
+// Blocco critico: Supabase non configurato
+if (!env.supabaseUrl || !env.supabaseServiceRoleKey) {
+  console.error('ERRORE CRITICO: SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY sono obbligatori.');
   process.exit(1);
 }
 

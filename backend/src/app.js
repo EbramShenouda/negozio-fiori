@@ -1,21 +1,16 @@
 const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const path = require('path');
+const helmet  = require('helmet');
+const cors    = require('cors');
 const rateLimit = require('express-rate-limit');
-const env = require('./config/env');
+const env     = require('./config/env');
 const publicRoutes = require('./routes/publicRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+const adminRoutes  = require('./routes/adminRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
 // ── Sicurezza ─────────────────────────────────────────────
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' }, // permette il caricamento immagini da frontend
-  })
-);
+app.use(helmet());
 
 // ── CORS ─────────────────────────────────────────────────
 const corsOptions = {
@@ -60,8 +55,7 @@ app.use(
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// ── File statici: immagini caricate ──────────────────────
-app.use('/uploads', express.static(path.resolve(env.uploadPath)));
+// Nota: le immagini sono su Supabase Storage – nessuna cartella /uploads locale
 
 // ── API Routes ────────────────────────────────────────────
 app.use('/api', publicRoutes);

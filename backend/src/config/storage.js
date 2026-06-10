@@ -1,55 +1,68 @@
 const path = require('path');
-const fs = require('fs');
 const multer = require('multer');
+const db = require('./db');         // Supabase client
 const env = require('./env');
 
-// Crea la directory uploads se non esiste
-const uploadDir = path.resolve(env.uploadPath);
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Tipi di file immagine accettati
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-// Configurazione storage locale (sviluppo e produzione self-hosted)
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    // Nome file sicuro: timestamp + estensione originale
-    const ext = path.extname(file.originalname).toLowerCase();
-    const safeName = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-    cb(null, safeName);
-  },
-});
-
-// Filtro tipo file – accetta solo immagini
-const fileFilter = (_req, file, cb) => {
-  if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Formato file non supportato. Usa JPEG, PNG o WebP.'), false);
-  }
-};
-
+/**
+ * Multer con memoria RAM (nessun file locale).
+ * Il buffer verrà poi caricato su Supabase Storage.
+ */
 const upload = multer({
-  storage,
-  fileFilter,
+  storage: multer.memoryStorage(),
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Formato file non supportato. Usa JPEG, PNG o WebP.'), false);
+    }
+  },
   limits: { fileSize: env.maxFileSize },
 });
 
 /**
- * Restituisce l'URL pubblico di un'immagine.
- * Se il path inizia con http, è un URL esterno (demo data).
- * Altrimenti è un path locale nel filesystem.
+ * Carica un file (da multer memoryStorage) su Supabase Storage.
+ * Restituisce l'URL pubblico dell'immagine.
+ *
+ * @param {Express.Multer.File} file
+ * @returns {Promise<string>} URL pubblico
  */
-function getImageUrl(req, imagePath) {
-  if (!imagePath) return null;
-  if (imagePath.startsWith('http')) return imagePath;
-  const filename = path.basename(imagePath);
-  const protocol = req.protocol;
-  const host = req.get('host');
-  return `${protocol}://${host}/uploads/${filename}`;
+async function uploadToSupabase(file) {
+  const ext      = path.extname(file.originalname).toLowerCase() || '.jpg';
+  const fileName = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+  const bucket   = env.supabaseStorageBucket;
+
+  const { error: uploadError } = await db.storage
+    .from(bucket)
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error(`Upload Supabase Storage fallito: ${uploadError.message}`);
+  }
+
+  // Recupera URL pubblico
+  const { data } = db.storage.from(bucket).getPublicUrl(fileName);
+  return data.publicUrl;
 }
 
-module.exports = { upload, getImageUrl, uploadDir };
+/**
+ * Rimuove un'immagine da Supabase Storage dato il suo URL pubblico.
+ * Ignora in silenzio se l'URL non è del nostro bucket o è nullo.
+ *
+ * @param {string|null} imageUrl
+ */
+async function deleteFromSupabase(imageUrl) {
+  if (!imageUrl) return;
+  const bucket = env.supabaseStorageBucket;
+  const marker = `/storage/v1/object/public/${bucket}/`;
+  const idx    = imageUrl.indexOf(marker);
+  if (idx === -1) return;                 // immagine esterna (es. demo Unsplash)
+  const filePath = imageUrl.slice(idx + marker.length);
+  await db.storage.from(bucket).remove([filePath]);
+}
+
+module.exports = { upload, uploadToSupabase, deleteFromSupabase };
