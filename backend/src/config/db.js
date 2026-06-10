@@ -2,7 +2,14 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    global: {
+      headers: {
+        'x-connection-mode': 'rest-only'
+      }
+    }
+  }
 );
 
 module.exports = supabase;
