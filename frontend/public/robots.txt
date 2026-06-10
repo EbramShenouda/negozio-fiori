@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin
+
+Sitemap: https://tuo-dominio.it/sitemap.xml
