@@ -1,18 +1,14 @@
 const { createClient } = require('@supabase/supabase-js');
-const env = require('./env');
+const ws = require('ws');
 
-/**
- * Client Supabase con service-role key.
- * Bypassa RLS → usare SOLO nel backend, mai esporre al frontend.
- * Esportato con lo stesso nome ("db") per compatibilità con i model esistenti.
- */
-const db = createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession:   false,
-  },
-});
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    realtime: {
+      enabled: false
+    }
+  }
+);
 
-console.log('✅ Supabase client inizializzato.');
-
-module.exports = db;
+module.exports = supabase;
