@@ -143,7 +143,7 @@ async function runSeed() {
 }
 
 module.exports = { runSeed };
-
+/*
  *  1. L'utente admin iniziale
  *  2. Le categorie demo
  *  3. I prodotti demo (bouquet e composizioni)
