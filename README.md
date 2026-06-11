@@ -57,7 +57,6 @@ Costruita con React + Vite + Tailwind CSS (frontend) e Node.js + Express + SQLit
 | SEO       | React Helmet Async |
 | HTTP      | Axios |
 | Backend   | Node.js + Express 4 |
-| Database  | SQLite (better-sqlite3) |
 | Auth      | JWT (jsonwebtoken) + bcryptjs |
 | Upload    | Multer |
 | Sicurezza | Helmet + CORS + express-rate-limit + express-validator |

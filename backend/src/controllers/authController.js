@@ -51,29 +51,4 @@ function logout(_req, res) {
 module.exports = { login, me, logout };
 
 
-/**
- * POST /api/auth/login
- * Autentica l'admin e restituisce un JWT.
- */
-
-
-/**
- * GET /api/auth/me
- * Restituisce i dati dell'admin autenticato (richiede JWT).
- */
-function me(req, res) {
-  return res.json({
-    success: true,
-    admin: { id: req.admin.id, username: req.admin.username },
-  });
-}
-
-/**
- * POST /api/auth/logout
- * Il client deve eliminare il token. Questo endpoint è puramente semantico.
- */
-function logout(_req, res) {
-  return res.json({ success: true, message: 'Logout effettuato.' });
-}
-
-module.exports = { login, me, logout };
+ 
