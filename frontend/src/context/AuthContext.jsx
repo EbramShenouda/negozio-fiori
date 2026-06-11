@@ -8,19 +8,35 @@ export function AuthProvider({ children }) {
   const [loading, setLoading]   = useState(true);
 
   // Verifica il token salvato all'avvio
-  useEffect(() => {
+useEffect(() => {
+  const init = async () => {
     const token = localStorage.getItem('admin_token');
-    const saved = localStorage.getItem('admin_user');
-    if (token && saved) {
-      try {
-        setAdmin(JSON.parse(saved));
-      } catch {
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_user');
-      }
+
+    if (!token) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
-  }, []);
+
+    try {
+      const { data } = await authApi.me();
+
+      if (data.success) {
+        setAdmin(data.admin);
+        localStorage.setItem('admin_user', JSON.stringify(data.admin));
+      } else {
+        throw new Error();
+      }
+    } catch {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      setAdmin(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  init();
+}, []);
 
   const login = useCallback(async (username, password) => {
     const { data } = await authApi.login({ username, password });
